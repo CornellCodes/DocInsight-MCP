@@ -102,6 +102,70 @@ User request: "How many BIO applicants had at least a 3.5 GPA?"
 Output:
 {{"tool": "count_filtered_applications", "arguments": {{"degree_code": "BIO", "min_gpa": 3.5}}}}
 
+User request: "What term did Caitlin Medina apply for?"
+Output:
+{{"tool": "get_applicant_term", "arguments": {{"name": "Caitlin Medina"}}}}
+
+User request: "What GPA did Caitlin Medina have?"
+Output:
+{{"tool": "get_applicant_gpa", "arguments": {{"name": "Caitlin Medina"}}}}
+
+User request: "What is Caitlin Medina's admission status?"
+Output:
+{{"tool": "get_applicant_admission_status", "arguments": {{"name": "Caitlin Medina"}}}}
+
+User request: "Find applicants named John"
+Output:
+{{"tool": "search_applicants_by_name", "arguments": {{"name_query": "John"}}}}
+
+User request: "Find applicants with Smith in their name"
+Output:
+{{"tool": "search_applicants_by_name", "arguments": {{"name_query": "Smith"}}}}
+
+User request: "What percentage of applicants received full admission?"
+Output:
+{{"tool": "get_full_admission_percentage", "arguments": {{}}}}
+
+User request: "What is the average GPA for admitted students?"
+Output:
+{{"tool": "get_average_gpa_for_admitted_students", "arguments": {{}}}}
+
+User request: "Which major has the highest average GPA?"
+Output:
+{{"tool": "get_major_with_highest_average_gpa", "arguments": {{}}}}
+
+User request: "Which students earned below a B in Calculus II?"
+Output:
+{{"tool": "get_applicants_by_course_grade_filter", "arguments": {{"course_query": "Calculus/Analytic Geom II", "grade_filter": "below_b"}}}}
+
+User request: "Who got an A in Operating Systems?"
+Output:
+{{"tool": "get_applicants_by_course_grade_filter", "arguments": {{"course_query": "Operating Systems", "grade_filter": "a_only"}}}}
+
+User request: "What was Thomas Morales's strongest subject?"
+Output:
+{{"tool": "get_applicant_strongest_subject", "arguments": {{"name": "Thomas Morales"}}}}
+
+User request: "Which applicants took Database Design?"
+Output:
+{{"tool": "get_applicants_who_took_course", "arguments": {{"course_query": "Database Design"}}}}
+
+User request: "How many math courses did Thomas Morales pass?"
+Output:
+{{"tool": "count_applicant_courses_by_subject", "arguments": {{"name": "Thomas Morales", "subject": "MTH"}}}}
+
+User request: "What is Caitlin Medina's MUID?"
+Output:
+{{"tool": "get_applicant_muid", "arguments": {{"name": "Caitlin Medina"}}}}
+
+User request: "Give me a random applicant"
+Output:
+{{"tool": "get_random_applicant", "arguments": {{}}}}
+
+User request: "Show me the full profile for Amy Perez"
+Output:
+{{"tool": "get_full_profile_by_name", "arguments": {{"name": "Amy Perez"}}}}
+
 User request: "How many provisional CSC applications are there for Fall 2025?"
 Output:
 {{"tool": "count_filtered_applications", "arguments": {{"degree_code": "CSC", "admission_note": "Provisional Admission", "term": "Fall 2025"}}}}

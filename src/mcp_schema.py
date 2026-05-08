@@ -85,6 +85,98 @@ TOOLS: List[Dict[str, Any]] = [
             "term": "string"
         }
     },
+    {
+        "name": "get_random_applicant",
+        "description": "Return one random applicant",
+        "parameters": {}
+    },
+    {
+        "name": "get_applicant_admission_status",
+        "description": "Get the admission decision/status for a specific applicant by name.",
+        "parameters": {
+            "name": "string"
+        }
+    },
+    {
+        "name": "get_applicant_term",
+        "description": "Get the application term for a specific applicant by name.",
+        "parameters": {
+            "name": "string"
+        }
+    },
+    {
+        "name": "get_applicant_gpa",
+        "description": "Get the GPA for a specific applicant by name.",
+        "parameters": {
+            "name": "string"
+        }
+    },
+    {
+        "name": "search_applicants_by_name",
+        "description": "Find applicants whose name matches or partially matches a search query.",
+        "parameters": {
+            "name_query": "string"
+        }
+    },
+    {
+        "name": "get_applicant_muid",
+        "description": "Get the MUID for a specific applicant by name.",
+        "parameters": {
+            "name": "string"
+        }
+    },
+    {
+        "name": "get_full_admission_percentage",
+        "description": "Calculate the percentage of applicants who received full admission.",
+        "parameters": {}
+    },
+    {
+        "name": "get_average_gpa_for_admitted_students",
+        "description": "Calculate the average GPA for admitted students, including full, conditional, and provisional admissions.",
+        "parameters": {}
+    },
+    {
+        "name": "get_major_with_highest_average_gpa",
+        "description": "Find the major with the highest average applicant GPA.",
+        "parameters": {}
+    },
+    {
+        "name": "get_applicants_who_took_course",
+        "description": "Find applicants who took a course by course title, subject and number, or partial course name.",
+        "parameters": {
+            "course_query": "string"
+        }
+    },
+    {
+        "name": "get_applicants_by_course_grade_filter",
+        "description": "Find applicants based on their grade in a specific course. grade_filter can be below_b, at_least_b, a_only, exact_b, or passed.",
+        "parameters": {
+            "course_query": "string",
+            "grade_filter": "string"
+        }
+    },
+    {
+        "name": "get_applicant_strongest_subject",
+        "description": "Determine the applicant's strongest subject area based on highest average course grade.",
+        "parameters": {
+            "name": "string"
+        }
+    },
+    {
+        "name": "count_applicant_courses_by_subject",
+        "description": "Count how many completed courses an applicant has in a specific subject, such as CS, MTH, ENG, or CMM.",
+        "parameters": {
+            "name": "string",
+            "subject": "string"
+        }
+    },
+    {
+        "name": "get_full_profile_by_name",
+        "description": "Get a full applicant profile by name, including application details, missing items, documents, and transcript courses.",
+        "parameters": {
+            "name": "string"
+        }
+    },
 ]
 
 
@@ -100,6 +192,20 @@ REQUIRED_ARGUMENTS: Dict[str, List[str]] = {
     "get_missing_items_for_application": ["app_id"],
     "get_documents_for_application": ["app_id"],
     "count_filtered_applications": [],
+    "get_random_applicant": [],
+    "get_applicant_admission_status": ["name"],
+    "get_applicant_term": ["name"],
+    "get_applicant_gpa": ["name"],
+    "search_applicants_by_name": ["name_query"],
+    "get_applicant_muid": ["name"],
+    "get_full_admission_percentage": [],
+    "get_average_gpa_for_admitted_students": [],
+    "get_major_with_highest_average_gpa": [],
+    "get_applicants_who_took_course": ["course_query"],
+    "get_applicants_by_course_grade_filter": ["course_query", "grade_filter"],
+    "get_applicant_strongest_subject": ["name"],
+    "count_applicant_courses_by_subject": ["name", "subject"],
+    "get_full_profile_by_name": ["name"],
 }
 
 

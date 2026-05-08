@@ -21,6 +21,6 @@ def generate_tool_call(user_input: str) -> dict:
 
         except Exception:
             if attempt == MAX_RETRIES - 1:
-                raise ValueError(f"LLM failed after retries:\n{response_text}")
+                raise ValueError(f"LLM failed to find a suitable tool")
 
     raise ValueError("Unexpected error while generating tool call.")

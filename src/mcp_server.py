@@ -14,6 +14,20 @@ from db import (
     get_missing_items_for_application,
     get_documents_for_application,
     count_filtered_applications,
+    get_random_applicant,
+    get_applicant_admission_status,
+    get_applicant_term,
+    get_applicant_gpa,
+    search_applicants_by_name,
+    get_applicant_muid,
+    get_full_admission_percentage,
+    get_average_gpa_for_admitted_students,
+    get_major_with_highest_average_gpa,
+    get_applicants_who_took_course,
+    get_applicants_by_course_grade_filter,
+    get_applicant_strongest_subject,
+    count_applicant_courses_by_subject,
+    get_full_profile_by_name,
 )
 
 
@@ -112,5 +126,34 @@ def execute_query(conn: sqlite3.Connection, tool_call: Dict[str, Any]):
                 term=args.get("term"),
             )
         }
+    if tool_name == "get_random_applicant":
+        return get_random_applicant(conn)
+    if tool_name == "get_applicant_admission_status":
+        return get_applicant_admission_status(conn, **args)
+    if tool_name == "get_applicant_term":
+        return get_applicant_term(conn, **args)
+    if tool_name == "get_applicant_gpa":
+        return get_applicant_gpa(conn, **args)
+    if tool_name == "search_applicants_by_name":
+        return search_applicants_by_name(conn, **args)
+    if tool_name == "get_applicant_muid":
+        return get_applicant_muid(conn, **args)
+    if tool_name == "get_full_admission_percentage":
+        return get_full_admission_percentage(conn)
+    if tool_name == "get_average_gpa_for_admitted_students":
+        return get_average_gpa_for_admitted_students(conn)
+    if tool_name == "get_major_with_highest_average_gpa":
+        return get_major_with_highest_average_gpa(conn)
+    if tool_name == "get_applicants_who_took_course":
+        return get_applicants_who_took_course(conn, **args)
+    if tool_name == "get_applicants_by_course_grade_filter":
+        return get_applicants_by_course_grade_filter(conn, **args)
+    if tool_name == "get_applicant_strongest_subject":
+        return get_applicant_strongest_subject(conn, **args)
+    if tool_name == "count_applicant_courses_by_subject":
+        return count_applicant_courses_by_subject(conn, **args)
+    if tool_name == "get_full_profile_by_name":
+        return get_full_profile_by_name(conn, **args)
+
 
     raise ValueError(f"Unhandled tool: {tool_name}")

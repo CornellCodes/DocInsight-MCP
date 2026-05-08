@@ -489,3 +489,417 @@ def count_filtered_applications(
     cursor.execute(query, params)
     row = cursor.fetchone()
     return row["total"]
+def get_random_applicant(conn: sqlite3.Connection) -> Optional[Dict[str, Any]]:
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT
+            a.appID,
+            u.applicantName,
+            d.dNm AS degreeCode,
+            n.adNote AS admissionNote,
+            a.term,
+            u.GPA
+        FROM Applications a
+        JOIN Users u ON a.uID = u.UID
+        JOIN Degrees d ON a.dID = d.dID
+        JOIN AdmissionNotes n ON a.adID = n.adID
+        ORDER BY RANDOM()
+        LIMIT 1
+    """)
+    row = cursor.fetchone()
+    return dict(row) if row else None
+def get_applicant_admission_status(conn, name):
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT
+            u.applicantName,
+            n.adNote AS admissionNote,
+            a.admissionsStatus
+        FROM Applications a
+        JOIN Users u ON a.uID = u.UID
+        JOIN AdmissionNotes n ON a.adID = n.adID
+        WHERE u.applicantName LIKE ?
+        LIMIT 1
+    """, (f"%{name}%",))
+
+    row = cursor.fetchone()
+    return dict(row) if row else None
+
+def get_applicant_term(conn, name):
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT
+            u.applicantName,
+            a.term
+        FROM Applications a
+        JOIN Users u ON a.uID = u.UID
+        WHERE u.applicantName LIKE ?
+        LIMIT 1
+    """, (f"%{name}%",))
+
+    row = cursor.fetchone()
+    return dict(row) if row else None
+def get_applicant_gpa(conn, name):
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT
+            u.applicantName,
+            u.GPA
+        FROM Users u
+        WHERE u.applicantName LIKE ?
+        LIMIT 1
+    """, (f"%{name}%",))
+
+    row = cursor.fetchone()
+    return dict(row) if row else None
+def search_applicants_by_name(conn, name_query):
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT
+            u.applicantName,
+            d.dNm AS degreeCode,
+            n.adNote AS admissionNote,
+            a.term,
+            u.GPA
+        FROM Applications a
+        JOIN Users u ON a.uID = u.UID
+        JOIN Degrees d ON a.dID = d.dID
+        JOIN AdmissionNotes n ON a.adID = n.adID
+        WHERE u.applicantName LIKE ?
+        ORDER BY u.applicantName
+    """, (f"%{name_query}%",))
+
+    rows = cursor.fetchall()
+    return [dict(row) for row in rows]
+def get_applicant_muid(conn, name):
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT
+            u.applicantName,
+            u.MUID
+        FROM Users u
+        WHERE u.applicantName LIKE ?
+        LIMIT 1
+    """, (f"%{name}%",))
+
+    row = cursor.fetchone()
+    return dict(row) if row else None
+def get_full_admission_percentage(conn):
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT COUNT(*) AS total
+        FROM Applications
+    """)
+
+    total = cursor.fetchone()["total"]
+
+    cursor.execute("""
+        SELECT COUNT(*) AS full_admissions
+        FROM Applications a
+        JOIN AdmissionNotes n
+            ON a.adID = n.adID
+        WHERE n.adNote = 'Full Admission'
+    """)
+
+    full_admissions = cursor.fetchone()["full_admissions"]
+
+    percentage = 0
+
+    if total > 0:
+        percentage = round((full_admissions / total) * 100, 2)
+
+    return {
+        "totalApplicants": total,
+        "fullAdmissions": full_admissions,
+        "percentage": percentage
+    }
+def get_average_gpa_for_admitted_students(conn):
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT
+            AVG(u.GPA) AS averageGPA,
+            COUNT(*) AS admittedCount
+        FROM Applications a
+        JOIN Users u ON a.uID = u.UID
+        JOIN AdmissionNotes n ON a.adID = n.adID
+        WHERE n.adNote IN (
+            'Full Admission',
+            'Conditional Admission',
+            'Provisional Admission'
+        )
+    """)
+
+    row = cursor.fetchone()
+
+    return {
+        "averageGPA": round(row["averageGPA"], 2) if row["averageGPA"] is not None else None,
+        "admittedCount": row["admittedCount"]
+    }
+def get_major_with_highest_average_gpa(conn):
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT
+            d.dNm AS degreeCode,
+            ROUND(AVG(u.GPA), 2) AS averageGPA,
+            COUNT(*) AS applicantCount
+        FROM Applications a
+        JOIN Users u ON a.uID = u.UID
+        JOIN Degrees d ON a.dID = d.dID
+        GROUP BY d.dNm
+        ORDER BY averageGPA DESC
+        LIMIT 1
+    """)
+
+    row = cursor.fetchone()
+    return dict(row) if row else None
+def get_applicants_who_took_course(conn, course_query):
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT DISTINCT
+            u.applicantName,
+            d.dNm AS degreeCode,
+            n.adNote AS admissionNote,
+            a.term,
+            c.subject,
+            c.courseNumber,
+            c.courseTitle,
+            c.grade
+        FROM ApplicantCourses c
+        JOIN Applications a ON c.appID = a.appID
+        JOIN Users u ON a.uID = u.UID
+        JOIN Degrees d ON a.dID = d.dID
+        JOIN AdmissionNotes n ON a.adID = n.adID
+        WHERE c.courseTitle LIKE ?
+           OR c.subject || ' ' || c.courseNumber LIKE ?
+           OR c.subject || c.courseNumber LIKE ?
+        ORDER BY u.applicantName
+    """, (
+        f"%{course_query}%",
+        f"%{course_query}%",
+        f"%{course_query}%"
+    ))
+
+    rows = cursor.fetchall()
+    return [dict(row) for row in rows]
+def get_applicants_by_course_grade_filter(conn, course_query, grade_filter):
+    grade_rank = {
+        "A": 4,
+        "B": 3,
+        "C": 2,
+        "D": 1,
+        "F": 0,
+        "W": -1
+    }
+
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT DISTINCT
+            u.applicantName,
+            d.dNm AS degreeCode,
+            n.adNote AS admissionNote,
+            a.term,
+            c.subject,
+            c.courseNumber,
+            c.courseTitle,
+            c.grade
+        FROM ApplicantCourses c
+        JOIN Applications a ON c.appID = a.appID
+        JOIN Users u ON a.uID = u.UID
+        JOIN Degrees d ON a.dID = d.dID
+        JOIN AdmissionNotes n ON a.adID = n.adID
+        WHERE c.courseTitle LIKE ?
+           OR c.subject || ' ' || c.courseNumber LIKE ?
+           OR c.subject || c.courseNumber LIKE ?
+        ORDER BY u.applicantName
+    """, (
+        f"%{course_query}%",
+        f"%{course_query}%",
+        f"%{course_query}%"
+    ))
+
+    rows = cursor.fetchall()
+    results = []
+
+    for row in rows:
+        row_dict = dict(row)
+        grade = row_dict["grade"]
+
+        if grade not in grade_rank:
+            continue
+
+        if grade_filter == "below_b" and grade_rank[grade] < grade_rank["B"]:
+            results.append(row_dict)
+
+        elif grade_filter == "at_least_b" and grade_rank[grade] >= grade_rank["B"]:
+            results.append(row_dict)
+
+        elif grade_filter == "a_only" and grade == "A":
+            results.append(row_dict)
+
+        elif grade_filter == "exact_b" and grade == "B":
+            results.append(row_dict)
+
+        elif grade_filter == "passed" and grade not in ("F", "W"):
+            results.append(row_dict)
+
+    return results
+def get_applicant_strongest_subject(conn, name):
+    grade_rank = {
+        "A": 4.0,
+        "B": 3.0,
+        "C": 2.0,
+        "D": 1.0,
+        "F": 0.0
+    }
+
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT
+            u.applicantName,
+            c.subject,
+            c.grade
+        FROM ApplicantCourses c
+        JOIN Applications a ON c.appID = a.appID
+        JOIN Users u ON a.uID = u.UID
+        WHERE u.applicantName LIKE ?
+    """, (f"%{name}%",))
+
+    rows = cursor.fetchall()
+
+    if not rows:
+        return None
+
+    subject_totals = {}
+    subject_counts = {}
+
+    applicant_name = rows[0]["applicantName"]
+
+    for row in rows:
+        subject = row["subject"]
+        grade = row["grade"]
+
+        if grade not in grade_rank:
+            continue
+
+        subject_totals[subject] = subject_totals.get(subject, 0) + grade_rank[grade]
+        subject_counts[subject] = subject_counts.get(subject, 0) + 1
+
+    if not subject_totals:
+        return None
+
+    averages = {
+        subject: subject_totals[subject] / subject_counts[subject]
+        for subject in subject_totals
+    }
+
+    strongest_subject = max(averages, key=averages.get)
+
+    return {
+        "applicantName": applicant_name,
+        "strongestSubject": strongest_subject,
+        "averageGradeScore": round(averages[strongest_subject], 2)
+    }
+
+def count_applicant_courses_by_subject(conn, name, subject):
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT
+            u.applicantName,
+            ? AS subject,
+            COUNT(*) AS completedCourseCount
+        FROM ApplicantCourses c
+        JOIN Applications a ON c.appID = a.appID
+        JOIN Users u ON a.uID = u.UID
+        WHERE u.applicantName LIKE ?
+          AND c.subject = ?
+          AND c.grade NOT IN ('F', 'W')
+        GROUP BY u.applicantName
+    """, (
+        subject,
+        f"%{name}%",
+        subject
+    ))
+
+    row = cursor.fetchone()
+    return dict(row) if row else None
+
+def get_full_profile_by_name(conn, name):
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT
+            a.appID,
+            u.applicantName,
+            u.MUID,
+            u.GPA,
+            u.gender,
+            u.emailAddress,
+            u.physAddress,
+            d.dNm AS degreeCode,
+            n.adNote AS admissionNote,
+            a.term,
+            a.admissionsStatus,
+            a.studentType,
+            a.decisionReason
+        FROM Applications a
+        JOIN Users u ON a.uID = u.UID
+        JOIN Degrees d ON a.dID = d.dID
+        JOIN AdmissionNotes n ON a.adID = n.adID
+        WHERE u.applicantName LIKE ?
+        LIMIT 1
+    """, (f"%{name}%",))
+
+    applicant = cursor.fetchone()
+
+    if not applicant:
+        return None
+
+    app_id = applicant["appID"]
+
+    cursor.execute("""
+        SELECT itemName
+        FROM MissingItems
+        WHERE appID = ?
+    """, (app_id,))
+    missing_items = [dict(row) for row in cursor.fetchall()]
+
+    cursor.execute("""
+        SELECT displayName, status, dateReceived
+        FROM ApplicationDocuments
+        WHERE appID = ?
+    """, (app_id,))
+    documents = [dict(row) for row in cursor.fetchall()]
+
+    cursor.execute("""
+        SELECT
+            term,
+            subject,
+            courseNumber,
+            courseTitle,
+            creditHours,
+            grade,
+            qualityPoints
+        FROM ApplicantCourses
+        WHERE appID = ?
+        ORDER BY term, subject, courseNumber
+    """, (app_id,))
+    courses = [dict(row) for row in cursor.fetchall()]
+
+    return {
+        "applicant": dict(applicant),
+        "missingItems": missing_items,
+        "documents": documents,
+        "courses": courses
+    }
