@@ -1,8 +1,12 @@
 .DS_Store
 failed/*
 processed/*
+staged/*
 src/docinsight.db
 src/__pycache__/*
 src/llm/__pycache__/*
 .gitignore.save
 .env
+.idea/*
+hex.py
+src/.idea/*
