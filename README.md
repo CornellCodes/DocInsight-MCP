@@ -114,6 +114,6 @@ Batch ingest behavior:
 
 ## Authors
 
-- Ethan Scott
 - Justin Cornell
+- Ethan Scott
 - Garrick Mills
