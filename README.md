@@ -1,119 +1,69 @@
-# MCP DocInsight
+# DocInsight-MCP
 
-MCP DocInsight is a document-driven system that parses structured graduate application PDFs, stores the extracted data in a SQLite database, and allows users to query that data using natural language.
+A document-driven query system that parses graduate application PDFs, stores 
+the extracted data in a SQLite database, and lets users ask plain-English 
+questions about the data — powered by Cohere's LLM API and a custom MCP 
+(Model Context Protocol) layer.
 
-## Overview
-
-This system demonstrates a controlled architecture for integrating large language models with databases. Instead of allowing the LLM to generate raw SQL, it produces structured tool calls that are validated and executed by an MCP (Model Context Protocol) layer.
+Built as a university capstone project to demonstrate safe LLM-database 
+integration without exposing raw SQL generation to the model.
 
 ## Features
-
 - Parse structured PDF application forms into JSON
-- Store application data in a SQLite database
-- Batch ingest directories of PDFs
-- Deduplicate files based on filename
-- Query data using natural language
-- Safe execution through validated tool calls
-- Support for filtering and aggregation queries
+- Store and query application data in SQLite
+- Batch ingest directories of PDFs with deduplication
+- Natural language querying via Cohere LLM API
+- Safe execution through a validated MCP tool call layer
+- Supports filtering and aggregation queries
 
 ## How It Works
+1. PDFs are parsed into structured Python dictionaries
+2. Parsed data is staged as JSON then inserted into SQLite
+3. User enters a natural language query
+4. The LLM converts the query into a structured tool call
+5. The MCP layer validates and executes the tool call safely
+6. Results are returned to the user
 
-1. A PDF is parsed into a structured Python dictionary
-2. The parsed data is staged as JSON
-3. The data is inserted into a SQLite database
-4. A user enters a natural language query
-5. The LLM converts the query into a structured tool call
-6. The MCP layer validates the tool call
-7. The database executes the corresponding query
-8. Results are returned to the user
+## Tech Stack
+- **Language:** Python
+- **Database:** SQLite
+- **LLM API:** Cohere
+- **PDF Parsing:** pdfplumber
+- **Protocol:** MCP (Model Context Protocol)
 
-## Setup Instructions
+## Setup
 
 ### 1. Clone the repository
-```bash
-git clone https://github.com/EthanScott19/DocInsight-MCP.git
-```
+git clone https://github.com/CornellCodes/DocInsight-MCP.git
+cd DocInsight-MCP
+
 ### 2. Create a virtual environment
-```bash
 python3 -m venv venv
 source venv/bin/activate
-```
 
 ### 3. Install dependencies
-```bash
 pip install -r requirements.txt
-```
 
-## Cohere API Key Setup
-
-This project requires a Cohere API key.
-
-### Step 1: Create an API key
-
-Visit:
-https://dashboard.cohere.com/api-keys
-
-Generate a new API key.
-
-### Step 2: Set environment variable
+### 4. Set your Cohere API key
 
 macOS / Linux:
-```bash
 export COHERE_API_KEY="your_api_key_here"
-```
-Optional (persist across sessions):
-```bash
+
+To persist across sessions:
 echo 'export COHERE_API_KEY="your_api_key_here"' >> ~/.zshrc
 source ~/.zshrc
-```
 
-### Step 3: Verify
-```bash
-echo $COHERE_API_KEY
-```
-
-## Running the Application
-
-From the project root:
-```bash
+### 5. Run the app
 cd MCP-DocInsight
 ./start.sh
-```
-## Usage
 
-### Option 1: Ask a Question
-
-Example queries:
-
-How many applicants are there?
-How many BIO applicants had at least a 3.5 GPA?
-Show CSC applicants above 3.2 GPA
-Show provisional admissions for Fall 2025
-
-### Option 2: Upload PDFs
-
-You can upload:
-- A single PDF file
-- A directory of PDFs for batch ingest
-
-Batch ingest behavior:
-- Detects new files based on filename
-- Allows user to exclude files before processing
-- Moves successfully processed files to processed/
-- Moves failed files to failed/
-
-## Notes
-
-- API keys are not included in the repository
-- Each user must provide their own Cohere API key
-- Duplicate PDFs are skipped based on filename
-
-## Future Improvements
-- Add more tools
-- Improve result formatting
+## Example Queries
+- "How many applicants are there?"
+- "How many BIO applicants had at least a 3.5 GPA?"
+- "Show CSC applicants above 3.2 GPA"
+- "Show provisional admissions for Fall 2025"
 
 ## Authors
-
 - Justin Cornell
 - Ethan Scott
 - Garrick Mills
